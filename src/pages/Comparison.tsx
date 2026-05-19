@@ -27,7 +27,7 @@ export default function Comparison() {
   const { data: persons = [] } = useQuery({
     queryKey: ['persons'],
     queryFn: async () => {
-      const { data, error } = await supabase.from('persons').select('*');
+      const { data, error } = await supabase.from('persons').select('*').order('created_at', { ascending: false });
       if (error) {
         console.error('Error fetching persons:', error);
         throw error;
@@ -40,7 +40,9 @@ export default function Comparison() {
         phone: p.phone,
         origin: p.origin
       }));
-    }
+    },
+    staleTime: 0, // Always fetch fresh data
+    refetchOnWindowFocus: true
   });
 
   const { data: attendances = [] } = useQuery({
