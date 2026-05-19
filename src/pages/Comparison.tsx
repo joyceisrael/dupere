@@ -28,10 +28,14 @@ export default function Comparison() {
     queryKey: ['persons'],
     queryFn: async () => {
       const { data, error } = await supabase.from('persons').select('*');
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching persons:', error);
+        throw error;
+      }
+      console.log('Fetched persons from Supabase:', data);
       return data.map((p: any) => ({
         ...p,
-        fullName: p.full_name,
+        fullName: p.full_name || p.fullName || '',
         address: p.address,
         phone: p.phone,
         origin: p.origin
