@@ -246,6 +246,7 @@ export async function loginWith(fullName: string, code: string, phone?: string):
   }
 
   console.log('Found user in Supabase:', data);
+  console.log('Avatar from Supabase:', data.avatar);
 
   // Check if the user has been deleted (name changed to Deleted Admin/User)
   if (data.full_name.startsWith("Deleted Admin") || data.full_name.startsWith("Deleted User")) {
@@ -262,6 +263,8 @@ export async function loginWith(fullName: string, code: string, phone?: string):
     role: data.role,
     avatarDataUrl: data.avatar
   };
+
+  console.log('Converted user with avatar:', u.avatarDataUrl);
 
   setSession(u);
   return u;

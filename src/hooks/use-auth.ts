@@ -34,7 +34,17 @@ export function useAuth() {
         return;
       }
 
-      setUserState(session);
+      // Update session with fresh data from Supabase (including avatar)
+      const updatedUser: User = {
+        id: data.id,
+        fullName: data.full_name,
+        phone: data.phone,
+        code: data.code,
+        role: data.role,
+        avatarDataUrl: data.avatar
+      };
+      setSession(updatedUser);
+      setUserState(updatedUser);
     };
 
     const handler = () => {
