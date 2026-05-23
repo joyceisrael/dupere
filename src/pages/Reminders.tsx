@@ -67,7 +67,10 @@ export default function Reminders() {
     queryKey: ['persons'],
     queryFn: async () => {
       const { data, error } = await supabase.from('persons').select('*');
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching persons:', error);
+        return []; // Return empty array instead of throwing error
+      }
       return data.map((p: any) => ({
         id: p.id,
         fullName: p.full_name,
@@ -78,7 +81,9 @@ export default function Reminders() {
         linkedEventId: p.linked_event_id,
         createdAt: p.created_at
       }));
-    }
+    },
+    retry: 1,
+    retryDelay: 1000
   });
 
   useEffect(() => {

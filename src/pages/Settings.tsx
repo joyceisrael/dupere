@@ -252,15 +252,15 @@ export default function Settings() {
       </div>
 
       {/* Profile card */}
-      <section className="glass rounded-3xl p-6 sm:p-8 space-y-6">
+      <section className="glass rounded-3xl p-4 sm:p-6 md:p-8 space-y-4 sm:space-y-6">
         <div className="flex items-center gap-3">
           <UserIcon className="w-5 h-5 text-primary" />
-          <h2 className="font-display text-xl font-bold">Profil</h2>
+          <h2 className="font-display text-lg sm:text-xl font-bold">Profil</h2>
         </div>
 
-        <div className="flex items-center gap-6">
+        <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
           <div className="relative group">
-            <div className="w-24 h-24 rounded-2xl overflow-hidden bg-gradient-divine flex items-center justify-center text-3xl font-display font-bold text-primary-foreground shadow-divine ring-2 ring-primary/40">
+            <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl overflow-hidden bg-gradient-divine flex items-center justify-center text-2xl sm:text-3xl font-display font-bold text-primary-foreground shadow-divine ring-2 ring-primary/40">
               {user.avatarDataUrl
                 ? <img src={user.avatarDataUrl} alt="" className="w-full h-full object-cover" />
                 : initials}
@@ -268,17 +268,17 @@ export default function Settings() {
             <button onClick={() => fileRef.current?.click()}
               className="absolute inset-0 rounded-2xl bg-background/70 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity"
               aria-label="Changer la photo">
-              <Camera className="w-6 h-6 text-primary" />
+              <Camera className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
             </button>
             <input ref={fileRef} type="file" accept="image/*" hidden
               onChange={(e) => e.target.files?.[0] && onPick(e.target.files[0])} />
           </div>
-          <div className="flex-1">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs uppercase tracking-widest">
+          <div className="flex-1 text-center sm:text-left">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-[10px] sm:text-xs uppercase tracking-widest">
               {user.role === "coordinator" ? <><Crown className="w-3 h-3" /> Coordonnateur</> : <><Shield className="w-3 h-3" /> Administrateur</>}
             </div>
-            <p className="font-display text-2xl font-bold mt-2">{user.fullName}</p>
-            <div className="flex gap-2 mt-2">
+            <p className="font-display text-xl sm:text-2xl font-bold mt-2">{user.fullName}</p>
+            <div className="flex gap-2 mt-2 justify-center sm:justify-start">
               <Button size="sm" variant="outline" onClick={() => fileRef.current?.click()}>
                 <Camera className="w-3.5 h-3.5 mr-1.5" /> Changer
               </Button>
@@ -293,7 +293,7 @@ export default function Settings() {
 
         <Separator />
 
-        <div className="grid sm:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label>Nom complet</Label>
             <Input value={name} onChange={(e) => setName(e.target.value)} />
@@ -303,17 +303,17 @@ export default function Settings() {
             <Input type="password" value={code} onChange={(e) => setCode(e.target.value)} />
           </div>
         </div>
-        <Button onClick={saveProfile} className="bg-gradient-divine hover:shadow-divine">Enregistrer</Button>
+        <Button onClick={saveProfile} className="bg-gradient-divine hover:shadow-divine w-full sm:w-auto">Enregistrer</Button>
       </section>
 
       {/* Coordinator: Admin management */}
       {user.role === "coordinator" && (
-        <section className="glass rounded-3xl p-6 sm:p-8 space-y-5">
+        <section className="glass rounded-3xl p-4 sm:p-6 md:p-8 space-y-4 sm:space-y-5">
           <div className="flex items-center gap-3">
             <Users className="w-5 h-5 text-primary" />
-            <h2 className="font-display text-xl font-bold">Gestion des administrateurs</h2>
+            <h2 className="font-display text-lg sm:text-xl font-bold">Gestion des administrateurs</h2>
           </div>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-[10px] sm:text-xs text-muted-foreground">
             En tant que coordonnateur, vous pouvez superviser et supprimer les comptes administrateurs.
           </p>
           {admins.length === 0 ? (
@@ -321,20 +321,20 @@ export default function Settings() {
           ) : (
             <div className="space-y-3">
               {admins.map(a => (
-                <div key={a.id} className="flex items-center justify-between gap-4 p-4 rounded-xl bg-muted/20 border border-border/30">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-gradient-divine flex items-center justify-center text-xs font-bold text-primary-foreground">
+                <div key={a.id} className="flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4 p-4 rounded-xl bg-muted/20 border border-border/30">
+                  <div className="flex items-center gap-3 w-full sm:w-auto">
+                    <div className="w-10 h-10 rounded-lg bg-gradient-divine flex items-center justify-center text-xs font-bold text-primary-foreground flex-shrink-0">
                       {a.fullName.split(" ").map(s => s[0]).slice(0, 2).join("")}
                     </div>
-                    <div>
-                      <p className="font-semibold text-sm">{a.fullName}</p>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-semibold text-sm truncate">{a.fullName}</p>
                       <p className="text-[10px] text-muted-foreground uppercase tracking-widest">
                         <Shield className="w-3 h-3 inline mr-1" />Administrateur
                       </p>
                     </div>
                   </div>
                   <Button size="sm" variant="outline" onClick={() => removeAdmin(a.id)}
-                    className="border-destructive/40 text-destructive hover:bg-destructive/10">
+                    className="border-destructive/40 text-destructive hover:bg-destructive/10 w-full sm:w-auto">
                     <Ban className="w-3.5 h-3.5 mr-1.5" /> Supprimer
                   </Button>
                 </div>
@@ -345,10 +345,10 @@ export default function Settings() {
       )}
 
       {/* Notifications */}
-      <section className="glass rounded-3xl p-6 sm:p-8 space-y-5">
+      <section className="glass rounded-3xl p-4 sm:p-6 md:p-8 space-y-4 sm:space-y-5">
         <div className="flex items-center gap-3">
           <Bell className="w-5 h-5 text-primary" />
-          <h2 className="font-display text-xl font-bold">Notifications</h2>
+          <h2 className="font-display text-lg sm:text-xl font-bold">Notifications</h2>
         </div>
         <Row icon={Smartphone} title="Notifications in-app" desc="Toasts et badges quand l'app est ouverte.">
           <Switch checked={inApp} onCheckedChange={setInApp} />
@@ -364,13 +364,13 @@ export default function Settings() {
       </section>
 
       {/* Danger */}
-      <section className="glass rounded-3xl p-6 sm:p-8 space-y-3">
+      <section className="glass rounded-3xl p-4 sm:p-6 md:p-8 space-y-3">
         <Button variant="outline" onClick={() => { signOut(); navigate("/auth"); }}
-          className="border-destructive/40 text-destructive hover:bg-destructive/10">
+          className="border-destructive/40 text-destructive hover:bg-destructive/10 w-full sm:w-auto">
           <LogOut className="w-4 h-4 mr-2" /> Se déconnecter
         </Button>
         <Button variant="outline" onClick={() => setDeleteDialogOpen(true)}
-          className="border-destructive/40 text-destructive hover:bg-destructive/10">
+          className="border-destructive/40 text-destructive hover:bg-destructive/10 w-full sm:w-auto">
           <Trash2 className="w-4 h-4 mr-2" /> Supprimer mon compte
         </Button>
       </section>

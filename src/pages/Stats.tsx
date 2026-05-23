@@ -14,27 +14,42 @@ export default function Stats() {
     queryKey: ['persons'],
     queryFn: async () => {
       const { data, error } = await supabase.from('persons').select('*');
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching persons:', error);
+        return []; // Return empty array instead of throwing error
+      }
       return data;
-    }
+    },
+    retry: 1,
+    retryDelay: 1000
   });
 
   const { data: events = [] } = useQuery({
     queryKey: ['events'],
     queryFn: async () => {
       const { data, error } = await supabase.from('events').select('*');
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching events:', error);
+        return []; // Return empty array instead of throwing error
+      }
       return data;
-    }
+    },
+    retry: 1,
+    retryDelay: 1000
   });
 
   const { data: attendances = [] } = useQuery({
     queryKey: ['attendances'],
     queryFn: async () => {
       const { data, error } = await supabase.from('attendances').select('*');
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching attendances:', error);
+        return []; // Return empty array instead of throwing error
+      }
       return data;
-    }
+    },
+    retry: 1,
+    retryDelay: 1000
   });
 
   // Fidèles = personnes cochées présentes à au moins 2 événements (culte ou activité)

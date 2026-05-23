@@ -47,7 +47,7 @@ export default function Events() {
       const { data, error } = await supabase.from('events').select('*');
       if (error) {
         console.error('Error fetching events:', error);
-        throw error;
+        return []; // Return empty array instead of throwing error
       }
       console.log('Events fetched from Supabase:', data.length, 'events');
       const mapped = data.map((e: any) => ({
@@ -64,7 +64,9 @@ export default function Events() {
       }));
       console.log('Events mapped:', mapped.length, 'events');
       return mapped;
-    }
+    },
+    retry: 1,
+    retryDelay: 1000
   });
 
   // Realtime subscription

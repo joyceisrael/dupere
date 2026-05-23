@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { GitCompare, Users, UserCheck, UserX, FileDown, Sparkles } from "lucide-react";
+import { GitCompare, Users, UserCheck, UserX, FileDown, Sparkles, Search } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -14,14 +15,20 @@ export default function Comparison() {
   const queryClient = useQueryClient();
   const [eventId, setEventId] = useState<string>("");
   const [evangEventId, setEvangEventId] = useState<string>("");
+  const [searchQuery, setSearchQuery] = useState<string>("");
 
   const { data: allEvents = [] } = useQuery({
     queryKey: ['events'],
     queryFn: async () => {
       const { data, error } = await supabase.from('events').select('*');
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching events:', error);
+        return []; // Return empty array instead of throwing error
+      }
       return data;
-    }
+    },
+    retry: 1,
+    retryDelay: 1000
   });
 
   const { data: persons = [] } = useQuery({
@@ -30,7 +37,7 @@ export default function Comparison() {
       const { data, error } = await supabase.from('persons').select('*').order('created_at', { ascending: false });
       if (error) {
         console.error('Error fetching persons:', error);
-        throw error;
+        return []; // Return empty array instead of throwing error
       }
       console.log('Fetched persons from Supabase:', data);
       return data.map((p: any) => ({
@@ -42,16 +49,23 @@ export default function Comparison() {
       }));
     },
     staleTime: 0, // Always fetch fresh data
-    refetchOnWindowFocus: true
+    refetchOnWindowFocus: true,
+    retry: 1, // Retry once on failure
+    retryDelay: 1000
   });
 
   const { data: attendances = [] } = useQuery({
     queryKey: ['attendances'],
     queryFn: async () => {
       const { data, error } = await supabase.from('attendances').select('*');
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching attendances:', error);
+        return []; // Return empty array instead of throwing error
+      }
       return data;
-    }
+    },
+    retry: 1,
+    retryDelay: 1000
   });
 
   const culteActiviteEvents = allEvents.filter(e => e.type !== "evangelism");
@@ -64,14 +78,33 @@ export default function Comparison() {
     [attendances, eventId]
   );
 
-  const present = persons.filter(p => presentIds.has(p.id));
-  const absent = persons.filter(p => !presentIds.has(p.id));
+  const filteredPersons = useMemo(
+    () => persons.filter(p => {
+      if (!searchQuery.trim()) return true;
+      const query = searchQuery.toLowerCase();
+      return p.fullName?.toLowerCase().includes(query) || p.phone?.toLowerCase().includes(query);
+    }),
+    [persons, searchQuery]
+  );
+
+  const present = filteredPersons.filter(p => presentIds.has(p.id));
+  const absent = filteredPersons.filter(p => !presentIds.has(p.id));
 
   // Evangelized persons linked to selected evangelism event
   const evangPersons = useMemo(() => {
-    if (!evangEventId) return persons.filter(p => p.origin === "evangelism");
-    return persons.filter(p => p.origin === "evangelism" && p.linkedEventId === evangEventId);
-  }, [persons, evangEventId]);
+    let basePersons = persons.filter(p => p.origin === "evangelism");
+    if (evangEventId) {
+      basePersons = basePersons.filter(p => p.linkedEventId === evangEventId);
+    }
+    // Filter by search query
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      basePersons = basePersons.filter(p =>
+        p.fullName?.toLowerCase().includes(query) || p.phone?.toLowerCase().includes(query)
+      );
+    }
+    return basePersons;
+  }, [persons, evangEventId, searchQuery]);
 
   const togglePresent = async (personId: string) => {
     if (!eventId) return toast.error("Choisir d'abord un événement.");
@@ -134,7 +167,7 @@ export default function Comparison() {
   const exportCombined = (kind: "pdf" | "xlsx") => {
     if (!selectedEvent) return toast.error("Sélectionner un événement.");
 
-    const toRow = (p: Person) => ({
+    const toRow = (p: any) => ({
       Nom: p.fullName,
       Téléphone: p.phone ?? "",
       Quartier: p.address ?? "",
@@ -245,14 +278,23 @@ export default function Comparison() {
           </TabsList>
 
           <TabsContent value="present" className="mt-6 space-y-4">
-            <div className="flex flex-wrap gap-2 justify-end">
+            <div className="flex flex-wrap gap-2 justify-between items-center">
+              <div className="relative flex-1 min-w-[200px]">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  placeholder="Rechercher par nom ou téléphone..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
               <Button variant="outline" size="sm" onClick={() => exportCombined("pdf")}>
                 <FileDown className="w-4 h-4 mr-1.5" /> PDF combiné
               </Button>
             </div>
             <div className="glass rounded-2xl p-4 space-y-2 max-h-[60vh] overflow-y-auto">
               <p className="text-xs text-muted-foreground mb-2">Cocher les personnes venues à : <b>{selectedEvent.title}</b></p>
-              {persons.map(p => {
+              {filteredPersons.map(p => {
                 const checked = presentIds.has(p.id);
                 return (
                   <label key={p.id}
@@ -272,7 +314,16 @@ export default function Comparison() {
           </TabsContent>
 
           <TabsContent value="absent" className="mt-6 space-y-4">
-            <div className="flex flex-wrap gap-2 justify-end">
+            <div className="flex flex-wrap gap-2 justify-between items-center">
+              <div className="relative flex-1 min-w-[200px]">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  placeholder="Rechercher par nom ou téléphone..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
               <Button variant="outline" size="sm" onClick={() => exportCombined("pdf")}>
                 <FileDown className="w-4 h-4 mr-1.5" /> PDF combiné
               </Button>
@@ -314,6 +365,15 @@ export default function Comparison() {
                     ))}
                   </SelectContent>
                 </Select>
+              </div>
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  placeholder="Rechercher par nom ou téléphone..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10"
+                />
               </div>
               <p className="text-xs text-muted-foreground">
                 {evangPersons.length} personne(s) évangélisée(s). Celles présentes au culte/activité sont marquées :
