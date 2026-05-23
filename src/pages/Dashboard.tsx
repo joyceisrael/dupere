@@ -119,47 +119,51 @@ export default function Dashboard() {
             Voici un aperçu de votre ministère aujourd'hui. Les âmes que vous accompagnez méritent toute votre attention.
           </p>
         </div>
-        {user?.avatarDataUrl ? (
-          <div className="relative aspect-[4/5] max-w-[180px] sm:max-w-[220px] md:max-w-[240px] mx-auto md:ml-auto rounded-2xl overflow-hidden animate-float z-10 group order-1 md:order-2">
-            {/* Premium glow effect */}
-            <div className="absolute inset-0 bg-gradient-to-br from-primary/30 via-primary/10 to-primary/30 animate-pulse" />
-            <div className="absolute inset-0 bg-gradient-to-tl from-primary/20 via-transparent to-primary/20 animate-pulse" style={{ animationDelay: '0.5s' }} />
-            <div className="absolute inset-0 rounded-2xl ring-4 ring-primary/40 ring-offset-4 ring-offset-background animate-pulse" style={{ animationDuration: '3s' }} />
-            <div className="absolute inset-0 rounded-2xl ring-2 ring-primary/60 ring-offset-2 ring-offset-background animate-pulse" style={{ animationDuration: '2s', animationDelay: '1s' }} />
-            
-            {/* Image */}
-            <img
-              src={user.avatarDataUrl}
-              alt={`Photo de profil de ${user.fullName}`}
-              className="relative w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700 ease-out"
-            />
-            
-            {/* Gradient overlay */}
-            <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-background/20 to-transparent" />
-            
-            {/* Shine effect */}
-            <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-            
-            {/* Info overlay */}
-            <div className="absolute bottom-0 left-0 right-0 p-3 sm:p-4 bg-gradient-to-t from-background/95 via-background/80 to-transparent">
-              <p className="text-xs sm:text-sm font-bold text-primary text-center truncate drop-shadow-lg">{user.fullName}</p>
-              <p className="text-[9px] sm:text-[11px] text-muted-foreground text-center uppercase tracking-widest font-semibold drop-shadow-md">{user.role === "coordinator" ? "Coordonnateur" : "Administrateur"}</p>
-            </div>
-            
-            {/* Decorative particles */}
-            <div className="absolute top-2 right-2 w-2 h-2 bg-primary rounded-full animate-ping" style={{ animationDuration: '2s' }} />
-            <div className="absolute bottom-3 left-3 w-1.5 h-1.5 bg-primary/60 rounded-full animate-ping" style={{ animationDuration: '3s', animationDelay: '1s' }} />
-          </div>
-        ) : (
-          <div className="relative aspect-square max-w-[200px] sm:max-w-[240px] md:max-w-[260px] mx-auto md:ml-auto rounded-2xl overflow-hidden animate-float shadow-divine ring-2 ring-primary/30 z-10 order-1 md:order-2">
+        <div className="flex flex-col sm:flex-row gap-4 items-center justify-center md:justify-end order-1 md:order-2">
+          {/* Group logo - always visible */}
+          <div className="relative aspect-square max-w-[120px] sm:max-w-[140px] md:max-w-[160px] rounded-2xl overflow-hidden animate-float shadow-divine ring-2 ring-primary/30 z-10">
             <img
               src={heroImg}
-              alt="Libération spirituelle"
+              alt="Racheté du Père"
               className="w-full h-full object-cover object-center"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-background/40 via-transparent to-transparent" />
           </div>
-        )}
+
+          {/* User profile photo - only if set */}
+          {user?.avatarDataUrl && (
+            <div className="relative aspect-[4/5] max-w-[100px] sm:max-w-[120px] md:max-w-[140px] rounded-2xl overflow-hidden animate-float z-10 group">
+              {/* Premium glow effect */}
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/30 via-primary/10 to-primary/30 animate-pulse" />
+              <div className="absolute inset-0 bg-gradient-to-tl from-primary/20 via-transparent to-primary/20 animate-pulse" style={{ animationDelay: '0.5s' }} />
+              <div className="absolute inset-0 rounded-2xl ring-4 ring-primary/40 ring-offset-4 ring-offset-background animate-pulse" style={{ animationDuration: '3s' }} />
+              <div className="absolute inset-0 rounded-2xl ring-2 ring-primary/60 ring-offset-2 ring-offset-background animate-pulse" style={{ animationDuration: '2s', animationDelay: '1s' }} />
+
+              {/* Image */}
+              <img
+                src={user.avatarDataUrl}
+                alt={`Photo de profil de ${user.fullName}`}
+                className="relative w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700 ease-out"
+              />
+
+              {/* Gradient overlay */}
+              <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-background/20 to-transparent" />
+
+              {/* Shine effect */}
+              <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+
+              {/* Info overlay */}
+              <div className="absolute bottom-0 left-0 right-0 p-2 sm:p-3 bg-gradient-to-t from-background/95 via-background/80 to-transparent">
+                <p className="text-[10px] sm:text-xs font-bold text-primary text-center truncate drop-shadow-lg">{user.fullName}</p>
+                <p className="text-[8px] sm:text-[10px] text-muted-foreground text-center uppercase tracking-widest font-semibold drop-shadow-md">{user.role === "coordinator" ? "Coordonnateur" : "Administrateur"}</p>
+              </div>
+
+              {/* Decorative particles */}
+              <div className="absolute top-2 right-2 w-2 h-2 bg-primary rounded-full animate-ping" style={{ animationDuration: '2s' }} />
+              <div className="absolute bottom-3 left-3 w-1.5 h-1.5 bg-primary/60 rounded-full animate-ping" style={{ animationDuration: '3s', animationDelay: '1s' }} />
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Stat cards */}
