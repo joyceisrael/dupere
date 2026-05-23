@@ -17,11 +17,20 @@ import NotFound from "./pages/NotFound";
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 1000 * 60 * 5, // 5 minutes
-      gcTime: 1000 * 60 * 10, // 10 minutes
+      staleTime: 0, // No caching
+      gcTime: 0, // No garbage collection time
+      refetchOnWindowFocus: false,
+      refetchOnMount: false,
+      refetchOnReconnect: false,
+      retry: false,
     },
   },
 });
+
+// Clear cache on page load to prevent 404 errors
+if (typeof window !== 'undefined') {
+  queryClient.clear();
+}
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
