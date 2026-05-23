@@ -301,10 +301,10 @@ export default function Comparison() {
                     className={`flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-all ${checked ? "bg-primary/10 border border-primary/30" : "hover:bg-muted/30 border border-transparent"}`}>
                     <Checkbox checked={checked} onCheckedChange={() => togglePresent(p.id)} />
                     <div className="w-9 h-9 rounded-lg bg-gradient-divine flex items-center justify-center text-xs font-bold text-primary-foreground">
-                      {p.full_name ? p.full_name.split(" ").map(s => s[0]).slice(0, 2).join("") : "??"}
+                      {p.fullName ? p.fullName.split(" ").map(s => s[0]).slice(0, 2).join("") : "??"}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium truncate">{p.full_name}</p>
+                      <p className="text-sm font-medium truncate">{p.fullName}</p>
                       <p className="text-[10px] text-muted-foreground">{p.phone ?? "—"}</p>
                     </div>
                   </label>

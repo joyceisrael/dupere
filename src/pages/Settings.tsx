@@ -71,7 +71,13 @@ export default function Settings() {
     const reader = new FileReader();
     reader.onload = async () => {
       const avatar = reader.result as string;
-      // Store avatar in localStorage instead of Supabase
+      // Store avatar in Supabase for cross-device sync
+      const { error } = await supabase.from('users').update({ avatar }).eq('id', user.id);
+      if (error) {
+        console.error('Error updating avatar in Supabase:', error);
+        toast.error("Erreur lors de la mise à jour de la photo.");
+        return;
+      }
       const updated = { ...user, avatarDataUrl: avatar };
       updateUser(updated);
       setUser(updated);
@@ -81,7 +87,13 @@ export default function Settings() {
   };
 
   const removePhoto = async () => {
-    // Remove avatar from localStorage instead of Supabase
+    // Remove avatar from Supabase for cross-device sync
+    const { error } = await supabase.from('users').update({ avatar: null }).eq('id', user.id);
+    if (error) {
+      console.error('Error removing avatar from Supabase:', error);
+      toast.error("Erreur lors de la suppression de la photo.");
+      return;
+    }
     const { avatarDataUrl, ...rest } = user;
     updateUser(rest);
     setUser(rest);
