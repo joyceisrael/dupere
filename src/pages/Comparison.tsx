@@ -337,10 +337,10 @@ export default function Comparison() {
                   {absent.map(p => (
                     <li key={p.id} className="flex items-center gap-3 p-2 rounded-lg bg-muted/20">
                       <div className="w-8 h-8 rounded-lg bg-muted/40 flex items-center justify-center text-xs font-bold">
-                        {p.full_name ? p.full_name.split(" ").map(s => s[0]).slice(0, 2).join("") : "??"}
+                        {p.fullName ? p.fullName.split(" ").map(s => s[0]).slice(0, 2).join("") : "??"}
                       </div>
                       <div className="min-w-0 flex-1">
-                        <p className="text-sm truncate">{p.full_name}</p>
+                        <p className="text-sm truncate">{p.fullName}</p>
                         <p className="text-[10px] text-muted-foreground">{p.phone ?? "—"}</p>
                       </div>
                     </li>
