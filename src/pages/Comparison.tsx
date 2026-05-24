@@ -13,9 +13,22 @@ import { exportToPdf } from "@/lib/exports";
 
 export default function Comparison() {
   const queryClient = useQueryClient();
-  const [eventId, setEventId] = useState<string>("");
-  const [evangEventId, setEvangEventId] = useState<string>("");
-  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [eventId, setEventId] = useState<string>(() => localStorage.getItem('comparison.eventId') || "");
+  const [evangEventId, setEvangEventId] = useState<string>(() => localStorage.getItem('comparison.evangEventId') || "");
+  const [searchQuery, setSearchQuery] = useState<string>(() => localStorage.getItem('comparison.searchQuery') || "");
+
+  // Save state to localStorage when it changes
+  useEffect(() => {
+    localStorage.setItem('comparison.eventId', eventId);
+  }, [eventId]);
+
+  useEffect(() => {
+    localStorage.setItem('comparison.evangEventId', evangEventId);
+  }, [evangEventId]);
+
+  useEffect(() => {
+    localStorage.setItem('comparison.searchQuery', searchQuery);
+  }, [searchQuery]);
 
   const { data: allEvents = [] } = useQuery({
     queryKey: ['events'],

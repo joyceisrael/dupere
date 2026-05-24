@@ -125,8 +125,11 @@ export default function Persons() {
   const matchingEvents = useMemo(() => {
     const typeMap: Record<string, string> = { culte: "thursday", evangelism: "evangelism", activite: "activity" };
     const eventType = typeMap[form.origin];
+    console.log('Selected origin:', form.origin, 'Event type:', eventType);
     if (!eventType) return [];
-    return events.filter(e => e.type === eventType);
+    const filtered = events.filter(e => e.type === eventType);
+    console.log('Matching events:', filtered);
+    return filtered;
   }, [events, form.origin]);
 
   const add = async (e: React.FormEvent) => {
