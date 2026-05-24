@@ -126,6 +126,7 @@ export default function Persons() {
     const typeMap: Record<string, string> = { culte: "thursday", evangelism: "evangelism", activite: "activity" };
     const eventType = typeMap[form.origin];
     console.log('Selected origin:', form.origin, 'Event type:', eventType);
+    console.log('All events:', events);
     if (!eventType) return [];
     const filtered = events.filter(e => e.type === eventType);
     console.log('Matching events:', filtered);
