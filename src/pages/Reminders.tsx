@@ -412,12 +412,34 @@ export default function Reminders() {
     toast.success("Rappel supprimé.");
   };
 
-  const callPerson = (phone?: string) => {
+  const callPerson = async (phone?: string, personId?: string) => {
     if (!phone) return toast.error("Aucun numéro.");
+
+    // Broadcast call action if sync is active
+    if (syncActive && syncSessionId && personId) {
+      await supabase.from('reminder_sync_actions').insert({
+        session_id: syncSessionId,
+        person_id: personId,
+        action_type: 'call',
+        performed_by: user?.id
+      });
+    }
+
     window.location.href = `tel:${phone}`;
   };
-  const openWhatsApp = (phone?: string) => {
+  const openWhatsApp = async (phone?: string, personId?: string) => {
     if (!phone) return toast.error("Aucun numéro.");
+
+    // Broadcast whatsapp action if sync is active
+    if (syncActive && syncSessionId && personId) {
+      await supabase.from('reminder_sync_actions').insert({
+        session_id: syncSessionId,
+        person_id: personId,
+        action_type: 'whatsapp',
+        performed_by: user?.id
+      });
+    }
+
     window.open(`https://wa.me/${phone.replace(/\D/g, "")}`, "_blank");
   };
 
@@ -729,10 +751,10 @@ export default function Reminders() {
                     </div>
                   </div>
                   <div className="grid grid-cols-2 gap-2 mt-3">
-                    <Button size="sm" variant="outline" onClick={() => callPerson(p.phone)} className="border-accent/40 hover:bg-accent/10">
+                    <Button size="sm" variant="outline" onClick={() => callPerson(p.phone, p.id)} className="border-accent/40 hover:bg-accent/10">
                       <Phone className="w-3 h-3 mr-1" /> Appel
                     </Button>
-                    <Button size="sm" variant="outline" onClick={() => openWhatsApp(p.phone)} className="border-success/40 text-success hover:bg-success/10">
+                    <Button size="sm" variant="outline" onClick={() => openWhatsApp(p.phone, p.id)} className="border-success/40 text-success hover:bg-success/10">
                       <MessageCircle className="w-3 h-3 mr-1" /> WA
                     </Button>
                   </div>
@@ -779,12 +801,12 @@ export default function Reminders() {
                   </div>
                   <div className="grid grid-cols-2 gap-2 mt-4">
                     {r.byCall && (
-                      <Button size="sm" variant="outline" onClick={() => callPerson(p?.phone)} className="border-accent/40 hover:bg-accent/10">
+                      <Button size="sm" variant="outline" onClick={() => callPerson(p?.phone, p?.id)} className="border-accent/40 hover:bg-accent/10">
                         <Phone className="w-3.5 h-3.5 mr-1.5" /> Appeler
                       </Button>
                     )}
                     {(r.byWhatsapp || p?.phone) && (
-                      <Button size="sm" variant="outline" onClick={() => openWhatsApp(p?.phone)} className="border-success/40 hover:bg-success/10 text-success">
+                      <Button size="sm" variant="outline" onClick={() => openWhatsApp(p?.phone, p?.id)} className="border-success/40 hover:bg-success/10 text-success">
                         <MessageCircle className="w-3.5 h-3.5 mr-1.5" /> WhatsApp
                       </Button>
                     )}
