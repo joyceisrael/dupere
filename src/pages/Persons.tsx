@@ -128,6 +128,13 @@ export default function Persons() {
     console.log('Selected origin:', form.origin, 'Event type:', eventType);
     console.log('All events:', events);
     if (!eventType) return [];
+
+    // For evangelism and activity, show all events since database doesn't have correct types
+    if (form.origin === "evangelism" || form.origin === "activite") {
+      console.log('Showing all events for evangelism/activite');
+      return events;
+    }
+
     const filtered = events.filter(e => e.type === eventType);
     console.log('Matching events:', filtered);
     return filtered;
