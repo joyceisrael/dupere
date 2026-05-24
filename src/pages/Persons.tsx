@@ -51,7 +51,9 @@ export default function Persons() {
         console.error('Error fetching persons:', error);
         return []; // Return empty array instead of throwing error
       }
-      return data.map((p: any) => ({
+      console.log('Fetched persons from Supabase:', data);
+      console.log('Number of persons:', data.length);
+      const mapped = data.map((p: any) => ({
         id: p.id,
         fullName: p.full_name,
         phone: p.phone,
@@ -61,6 +63,8 @@ export default function Persons() {
         linkedEventId: p.linked_event_id,
         createdAt: p.created_at
       }));
+      console.log('Mapped persons:', mapped);
+      return mapped;
     }
   });
 
