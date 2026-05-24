@@ -16,6 +16,7 @@ export default function Comparison() {
   const [eventId, setEventId] = useState<string>(() => localStorage.getItem('comparison.eventId') || "");
   const [evangEventId, setEvangEventId] = useState<string>(() => localStorage.getItem('comparison.evangEventId') || "");
   const [searchQuery, setSearchQuery] = useState<string>(() => localStorage.getItem('comparison.searchQuery') || "");
+  const [isExporting, setIsExporting] = useState(false);
 
   // Save state to localStorage when it changes
   useEffect(() => {
@@ -177,70 +178,91 @@ export default function Comparison() {
     }
   };
 
-  const exportCombined = (kind: "pdf" | "xlsx") => {
+  const exportCombined = async (kind: "pdf" | "xlsx") => {
     if (!selectedEvent) return toast.error("Sélectionner un événement.");
+    if (isExporting) return toast.error("Export en cours...");
 
-    const toRow = (p: any) => ({
-      Nom: p.fullName,
-      Téléphone: p.phone ?? "",
-      Quartier: p.address ?? "",
-      Source: p.origin === "evangelism" ? "Évangélisation" : p.origin === "activite" ? "Activité" : p.origin === "autre" ? "Autre" : "Culte",
-    });
+    setIsExporting(true);
 
-    const presentRows = present.map(toRow);
-    const absentRows = absent.map(toRow);
+    try {
+      const toRow = (p: any) => ({
+        Nom: p.fullName,
+        Téléphone: p.phone ?? "",
+        Quartier: p.address ?? "",
+        Source: p.origin === "evangelism" ? "Évangélisation" : p.origin === "activite" ? "Activité" : p.origin === "autre" ? "Autre" : "Culte",
+      });
 
-    // Group evangelized persons by their evangelism event (or registration date if no linked event)
-    const evangAll = persons.filter(p => p.origin === "evangelism");
-    const groups = new Map<string, { label: string; rows: ReturnType<typeof toRow>[] }>();
-    evangAll.forEach(p => {
-      const linkedEv = p.linkedEventId ? allEvents.find(e => e.id === p.linkedEventId) : undefined;
-      const key = linkedEv ? `ev-${linkedEv.id}`
-        : p.registrationDate ? `date-${new Date(p.registrationDate).toISOString().slice(0, 10)}`
-        : "sans-date";
-      const label = linkedEv
-        ? `${linkedEv.title} · ${new Date(linkedEv.date).toLocaleDateString("fr-FR")}`
-        : p.registrationDate ? `Date d'évangélisation : ${new Date(p.registrationDate).toLocaleDateString("fr-FR")}`
-        : "Évangélisés (date inconnue)";
-      if (!groups.has(key)) groups.set(key, { label, rows: [] });
-      groups.get(key)!.rows.push({ ...toRow(p), Présent: presentIds.has(p.id) ? "Oui" : "Non" } as any);
-    });
+      const presentRows = present.map(toRow);
+      const absentRows = absent.map(toRow);
 
-    const baseName = `comparaison-${selectedEvent.title.replace(/\s+/g, "-").toLowerCase().slice(0, 24)}`;
+      // Group evangelized persons by their evangelism event (or registration date if no linked event)
+      const evangAll = persons.filter(p => p.origin === "evangelism");
+      const groups = new Map<string, { label: string; rows: ReturnType<typeof toRow>[] }>();
+      evangAll.forEach(p => {
+        const linkedEv = p.linkedEventId ? allEvents.find(e => e.id === p.linkedEventId) : undefined;
+        const key = linkedEv ? `ev-${linkedEv.id}`
+          : p.registrationDate ? `date-${new Date(p.registrationDate).toISOString().slice(0, 10)}`
+          : "sans-date";
+        const label = linkedEv
+          ? `${linkedEv.title} · ${new Date(linkedEv.date).toLocaleDateString("fr-FR")}`
+          : p.registrationDate ? `Date d'évangélisation : ${new Date(p.registrationDate).toLocaleDateString("fr-FR")}`
+          : "Évangélisés (date inconnue)";
+        if (!groups.has(key)) groups.set(key, { label, rows: [] });
+        groups.get(key)!.rows.push({ ...toRow(p), Présent: presentIds.has(p.id) ? "Oui" : "Non" } as any);
+      });
 
-    if (kind === "xlsx") {
-      const sheets: { name: string; rows: any[] }[] = [
-        { name: "Présents", rows: presentRows },
-        { name: "Absents", rows: absentRows },
-      ];
-      groups.forEach((g, k) => sheets.push({ name: `Évang ${k.slice(-10)}`, rows: g.rows }));
-      // Excel export disabled
-      return;
-    } else {
-      const sections = [
-        {
-          heading: `Présents (${present.length}) — ${selectedEvent.title}`,
-          head: ["Nom", "Téléphone", "Quartier", "Source"],
-          body: presentRows.map(r => [r.Nom, r.Téléphone, r.Quartier, r.Source]),
-        },
-        {
-          heading: `Absents (${absent.length})`,
-          head: ["Nom", "Téléphone", "Quartier", "Source"],
-          body: absentRows.map(r => [r.Nom, r.Téléphone, r.Quartier, r.Source]),
-        },
-        ...Array.from(groups.values()).map(g => ({
-          heading: `Évangélisés — ${g.label} (${g.rows.length})`,
-          head: ["Nom", "Téléphone", "Quartier", "Présent ?"],
-          body: g.rows.map((r: any) => [r.Nom, r.Téléphone, r.Quartier, r.Présent]),
-        })),
-      ];
-      exportToPdf(
-        baseName,
-        `Comparaison — ${selectedEvent.title} (${new Date(selectedEvent.date).toLocaleDateString("fr-FR")})`,
-        sections,
-      );
+      const baseName = `comparaison-${selectedEvent.title.replace(/\s+/g, "-").toLowerCase().slice(0, 24)}`;
+
+      if (kind === "xlsx") {
+        const sheets: { name: string; rows: any[] }[] = [
+          { name: "Présents", rows: presentRows },
+          { name: "Absents", rows: absentRows },
+        ];
+        groups.forEach((g, k) => sheets.push({ name: `Évang ${k.slice(-10)}`, rows: g.rows }));
+        // Excel export disabled
+        return;
+      } else {
+        const sections = [
+          {
+            heading: `Présents (${present.length}) — ${selectedEvent.title}`,
+            head: ["Nom", "Téléphone", "Quartier", "Source"],
+            body: presentRows.map(r => [r.Nom, r.Téléphone, r.Quartier, r.Source]),
+          },
+          {
+            heading: `Absents (${absent.length})`,
+            head: ["Nom", "Téléphone", "Quartier", "Source"],
+            body: absentRows.map(r => [r.Nom, r.Téléphone, r.Quartier, r.Source]),
+          },
+          ...Array.from(groups.values()).map(g => ({
+            heading: `Évangélisés — ${g.label} (${g.rows.length})`,
+            head: ["Nom", "Téléphone", "Quartier", "Présent ?"],
+            body: g.rows.map((r: any) => [r.Nom, r.Téléphone, r.Quartier, r.Présent]),
+          })),
+        ];
+
+        // Use setTimeout to allow UI to update before heavy PDF generation
+        setTimeout(() => {
+          try {
+            exportToPdf(
+              baseName,
+              `Comparaison — ${selectedEvent.title} (${new Date(selectedEvent.date).toLocaleDateString("fr-FR")})`,
+              sections,
+            );
+            toast.success("Export généré.");
+          } catch (error) {
+            console.error('Error generating PDF:', error);
+            toast.error("Erreur lors de la génération du PDF.");
+          } finally {
+            setIsExporting(false);
+          }
+        }, 100);
+        return; // Return early since we're using setTimeout
+      }
+    } catch (error) {
+      console.error('Error during export:', error);
+      toast.error("Erreur lors de l'export.");
+      setIsExporting(false);
     }
-    toast.success("Export généré.");
   };
 
   return (
@@ -301,8 +323,17 @@ export default function Comparison() {
                   className="pl-10"
                 />
               </div>
-              <Button variant="outline" size="sm" onClick={() => exportCombined("pdf")}>
-                <FileDown className="w-4 h-4 mr-1.5" /> PDF combiné
+              <Button variant="outline" size="sm" onClick={() => exportCombined("pdf")} disabled={isExporting}>
+                {isExporting ? (
+                  <>
+                    <div className="w-4 h-4 mr-1.5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+                    Génération...
+                  </>
+                ) : (
+                  <>
+                    <FileDown className="w-4 h-4 mr-1.5" /> PDF combiné
+                  </>
+                )}
               </Button>
             </div>
             <div className="glass rounded-2xl p-4 space-y-2 max-h-[60vh] overflow-y-auto">
@@ -337,8 +368,17 @@ export default function Comparison() {
                   className="pl-10"
                 />
               </div>
-              <Button variant="outline" size="sm" onClick={() => exportCombined("pdf")}>
-                <FileDown className="w-4 h-4 mr-1.5" /> PDF combiné
+              <Button variant="outline" size="sm" onClick={() => exportCombined("pdf")} disabled={isExporting}>
+                {isExporting ? (
+                  <>
+                    <div className="w-4 h-4 mr-1.5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+                    Génération...
+                  </>
+                ) : (
+                  <>
+                    <FileDown className="w-4 h-4 mr-1.5" /> PDF combiné
+                  </>
+                )}
               </Button>
             </div>
             <div className="glass rounded-2xl p-4">
