@@ -51,7 +51,7 @@ export default function Reminders() {
   const [form, setForm] = useState({
     personId: "", kind: "engagement" as ReminderKind, title: "", note: "",
     startDate: new Date().toISOString().slice(0, 10),
-    byCall: true, byWhatsapp: false,
+    byCall: false, byWhatsapp: false,
   });
 
   // Sync session state
@@ -339,7 +339,7 @@ export default function Reminders() {
     const next = [r, ...reminders];
     setReminders(next);
     setOpen(false);
-    setForm({ personId: "", kind: "engagement", title: "", note: "", startDate: new Date().toISOString().slice(0, 10), byCall: true, byWhatsapp: false });
+    setForm({ personId: "", kind: "engagement", title: "", note: "", startDate: new Date().toISOString().slice(0, 10), byCall: false, byWhatsapp: false });
     toast.success("Rappel créé.");
   };
 
